@@ -1,0 +1,53 @@
+#pragma kernel CSInit
+#pragma kernel CSMain
+
+#define TAMANHO_GRUPO_X 10
+#define TAMANHO_GRUPO_Y 10
+
+RWTexture2D<float4> Result;
+
+float rand(float2 co)
+{
+    return 0.5 + (frac(sin(dot(co.xy, float2(12.9898, 78.233))) * 43758.5453)) * 0.5;
+}
+
+[numthreads(TAMANHO_GRUPO_X, TAMANHO_GRUPO_Y, 1)]
+void CSInit(uint3 id : SV_DispatchThreadID)
+{
+    // Gera um valor aleatorio com base nas coordenadas
+    float rnd = rand(id.xy);
+    // Define o valor inicial do pixel com base no valor aleatorio gerado
+    Result[id.xy] = rnd > .75 ? float4(1, 1, 1, 1) : float4(0, 0, 0, 0);
+}
+
+[numthreads(TAMANHO_GRUPO_X, TAMANHO_GRUPO_Y, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    // Calcula a quantidade de vizinhos vivos
+    int sum = 0;
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            if (x == 0 && y == 0) continue;
+            if (Result[id.xy + int2(x, y)].x > 0) sum++;
+        }
+    }
+
+    // Aplica as regras do Jogo da Vida
+
+    if (Result[id.xy].x > 0)
+    {
+        // Se a celula atual esta viva
+        // Se tiver 2 ou 3 vizinhos vivos, ela permanece viva
+        // Caso contrario, ela morre
+        Result[id.xy] = (sum == 2 || sum == 3) ? float4(1, 1, 1, 1) : float4(0, 0, 0, 1);
+    }
+    else
+    {
+        // Se a celula atual esta morta:
+        // Se tiver exatamente 3 vizinhos vivos, ela se torna viva
+        // Caso contrario, ela permanece morta
+        Result[id.xy] = (sum == 3) ? float4(1, 1, 1, 1) : float4(0, 0, 0, 1);
+    }
+}
