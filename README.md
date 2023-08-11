@@ -40,7 +40,7 @@ A GPU, por meio do compute shader, realizará cálculos paralelos em massa para 
 ## 🛠 Tecnologias
 
 - Unity3D
-- Compute Shader
+- Compute Shader (HLSL)
 - Git e Github
 
 ## 🖤 Contato
